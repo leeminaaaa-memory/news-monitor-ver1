@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>글로벌 외신 모니터</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c0f;
+    --bg2: #111318;
+    --bg3: #191d24;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --text: #e8eaed;
+    --text2: #8b919e;
+    --text3: #555c68;
+    --accent: #4f8ef7;
+    --accent2: #2a5cd4;
+    --green: #34c77b;
+    --green-bg: rgba(52,199,123,0.1);
+    --red: #f45b5b;
+    --red-bg: rgba(244,91,91,0.1);
+    --amber: #f5a623;
+    --amber-bg: rgba(245,166,35,0.08);
+    --ft: #c8a254;
+    --ft-bg: rgba(200,162,84,0.1);
+    --bbg: #5b9cf6;
+    --bbg-bg: rgba(91,156,246,0.1);
+    --nyt: #e05c5c;
+    --nyt-bg: rgba(224,92,92,0.1);
+    --wsj: #8b919e;
+    --wsj-bg: rgba(139,145,158,0.1);
+    --wp: #5dba8a;
+    --wp-bg: rgba(93,186,138,0.1);
+    --reu: #a78bfa;
+    --reu-bg: rgba(167,139,250,0.1);
+    --nik: #f97c4a;
+    --nik-bg: rgba(249,124,74,0.1);
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* ── HEADER ── */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    background: var(--bg);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(12px);
+  }
+  .header-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+    gap: 1rem;
+  }
+  .logo {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .logo h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 18px;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    color: var(--text);
+  }
+  .logo-badge {
+    font-size: 10px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: var(--green-bg);
+    color: var(--green);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  #status-text {
+    font-size: 12px;
+    color: var(--text3);
+  }
+  .refresh-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 16px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border2);
+    background: transparent;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .refresh-btn:hover { background: var(--bg3); border-color: rgba(255,255,255,0.2); }
+  .refresh-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .refresh-btn svg { transition: transform 0.6s; }
+  .refresh-btn.spinning svg { animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .live-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--green);
+    animation: pulse 2s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.8)} }
+
+  /* ── API KEY BANNER ── */
+  #api-banner {
+    background: rgba(79,142,247,0.08);
+    border-bottom: 1px solid rgba(79,142,247,0.2);
+    padding: 12px 2rem;
+  }
+  .api-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .api-inner label { font-size: 12px; color: var(--text2); white-space: nowrap; }
+  .api-inner input {
+    flex: 1;
+    min-width: 280px;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius-sm);
+    padding: 7px 12px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    outline: none;
+  }
+  .api-inner input:focus { border-color: var(--accent); }
+  .api-save-btn {
+    padding: 7px 16px;
+    background: var(--accent);
+    border: none;
+    border-radius: var(--radius-sm);
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    white-space: nowrap;
+  }
+  .api-save-btn:hover { opacity: 0.85; }
+  .api-hint { font-size: 11px; color: var(--text3); width: 100%; }
+
+  /* ── FILTERS ── */
+  .filters-bar {
+    border-bottom: 1px solid var(--border);
+    padding: 10px 2rem;
+    background: var(--bg);
+  }
+  .filters-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .filter-label { font-size: 11px; color: var(--text3); white-space: nowrap; margin-right: 2px; }
+  .filter-chip {
+    font-size: 11px;
+    font-weight: 400;
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.12s;
+    white-space: nowrap;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .filter-chip:hover { border-color: var(--border2); color: var(--text); }
+  .filter-chip.src-on { background: rgba(79,142,247,0.12); color: var(--bbg); border-color: rgba(79,142,247,0.3); }
+  .filter-chip.ind-on { background: var(--amber-bg); color: var(--amber); border-color: rgba(245,166,35,0.3); }
+  .filter-chip.co-on  { background: rgba(93,186,138,0.1); color: var(--wp); border-color: rgba(93,186,138,0.3); }
+  .filter-sep { width: 1px; height: 16px; background: var(--border); flex-shrink: 0; }
+
+  /* ── MAIN ── */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  /* ── SUMMARY BAR ── */
+  #summary-bar {
+    display: none;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 20px;
+    margin-bottom: 1.5rem;
+    gap: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .stat { display: flex; align-items: center; gap: 6px; }
+  .stat-l { font-size: 11px; color: var(--text3); }
+  .stat-v { font-size: 15px; font-weight: 500; color: var(--text); }
+  .stat-v.pos { color: var(--green); }
+  .stat-v.neg { color: var(--red); }
+  .overview-text {
+    flex: 1;
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.7;
+    border-left: 1px solid var(--border);
+    padding-left: 16px;
+    min-width: 0;
+  }
+
+  /* ── PLACEHOLDER ── */
+  #placeholder {
+    text-align: center;
+    padding: 5rem 1rem;
+    color: var(--text3);
+  }
+  #placeholder .icon { font-size: 48px; margin-bottom: 16px; }
+  #placeholder p { font-size: 15px; margin-bottom: 8px; }
+  #placeholder small { font-size: 12px; color: var(--text3); }
+
+  /* ── SKELETON ── */
+  .skeleton-wrap { display: flex; flex-direction: column; gap: 1px; }
+  .sk-item {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    margin-bottom: 1px;
+  }
+  .sk { background: var(--bg3); border-radius: 4px; animation: shimmer 1.4s ease-in-out infinite; }
+  @keyframes shimmer { 0%,100%{opacity:1} 50%{opacity:0.35} }
+
+  /* ── NEWS GRID ── */
+  #news-list { display: flex; flex-direction: column; gap: 1px; }
+
+  .news-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    transition: border-color 0.15s, background 0.15s;
+    animation: fadeIn 0.3s ease both;
+  }
+  .news-card:hover { border-color: var(--border2); background: var(--bg3); }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+
+  .card-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+  .source-tag {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    padding: 2px 7px;
+    border-radius: 4px;
+    text-transform: uppercase;
+  }
+  .tag-ft  { background: var(--ft-bg);  color: var(--ft); }
+  .tag-bbg { background: var(--bbg-bg); color: var(--bbg); }
+  .tag-nyt { background: var(--nyt-bg); color: var(--nyt); }
+  .tag-wsj { background: var(--wsj-bg); color: var(--wsj); }
+  .tag-wp  { background: var(--wp-bg);  color: var(--wp); }
+  .tag-reu { background: var(--reu-bg); color: var(--reu); }
+  .tag-nik { background: var(--nik-bg); color: var(--nik); }
+  .tag-other { background: var(--bg3); color: var(--text2); }
+
+  .card-date { font-size: 11px; color: var(--text3); }
+
+  .fresh-badge {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: var(--green-bg);
+    color: var(--green);
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+  }
+
+  .sentiment {
+    font-size: 10px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-left: auto;
+  }
+  .sent-pos { background: var(--green-bg); color: var(--green); }
+  .sent-neg { background: var(--red-bg);   color: var(--red); }
+  .sent-neu { background: var(--bg3);      color: var(--text3); }
+
+  .title-en {
+    font-family: 'DM Serif Display', serif;
+    font-size: 17px;
+    font-weight: 400;
+    line-height: 1.4;
+    color: var(--text);
+    margin-bottom: 3px;
+    letter-spacing: -0.01em;
+  }
+  .title-ko {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.5;
+    margin-bottom: 8px;
+    font-style: italic;
+  }
+  .summary {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.7;
+  }
+
+  .card-footer {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+  .tag-pill {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    color: var(--text3);
+    background: transparent;
+  }
+  .orig-link {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--accent);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 0;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.15s;
+    white-space: nowrap;
+  }
+  .orig-link:hover { border-bottom-color: var(--accent); }
+
+  .detail-toggle {
+    font-size: 11px;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text3);
+    padding: 3px 8px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.12s;
+  }
+  .detail-toggle:hover { color: var(--text); border-color: var(--border2); }
+
+  .detail-body {
+    display: none;
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.8;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+  }
+  .detail-body.open { display: block; }
+
+  /* ── ERROR ── */
+  .error-box {
+    background: var(--red-bg);
+    border: 1px solid rgba(244,91,91,0.2);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    font-size: 13px;
+    color: var(--red);
+    line-height: 1.6;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 1.5rem 2rem;
+    margin-top: 3rem;
+    text-align: center;
+    font-size: 11px;
+    color: var(--text3);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo">
+      <div class="live-dot" id="live-dot"></div>
+      <h1>글로벌 외신 모니터</h1>
+      <span class="logo-badge">24h Live</span>
+    </div>
+    <div class="header-right">
+      <span id="status-text">준비됨</span>
+      <button class="refresh-btn" id="refresh-btn" onclick="loadNews()">
+        <svg id="refresh-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+          <path d="M21 3v5h-5"/>
+          <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+          <path d="M8 16H3v5"/>
+        </svg>
+        새로고침
+      </button>
+    </div>
+  </div>
+</header>
+
+<div id="api-banner">
+  <div class="api-inner">
+    <label for="api-key-input">🔑 Anthropic API Key</label>
+    <input type="password" id="api-key-input" placeholder="sk-ant-..." autocomplete="off" />
+    <button class="api-save-btn" onclick="saveApiKey()">저장하고 시작</button>
+    <span class="api-hint">API 키는 브라우저 로컬스토리지에만 저장되며 외부로 전송되지 않습니다. <a href="https://console.anthropic.com" target="_blank" style="color:var(--accent)">발급받기 →</a></span>
+  </div>
+</div>
+
+<div class="filters-bar">
+  <div class="filters-inner">
+    <span class="filter-label">소스</span>
+    <button class="filter-chip src-on" data-s="all">전체</button>
+    <button class="filter-chip" data-s="Financial Times">FT</button>
+    <button class="filter-chip" data-s="Bloomberg">Bloomberg</button>
+    <button class="filter-chip" data-s="New York Times">NYT</button>
+    <button class="filter-chip" data-s="Wall Street Journal">WSJ</button>
+    <button class="filter-chip" data-s="Washington Post">WP</button>
+    <button class="filter-chip" data-s="Reuters">Reuters</button>
+    <button class="filter-chip" data-s="Nikkei Asia">Nikkei</button>
+    <div class="filter-sep"></div>
+    <span class="filter-label">산업</span>
+    <button class="filter-chip ind-on" data-t="">전체</button>
+    <button class="filter-chip" data-t="반도체">반도체</button>
+    <button class="filter-chip" data-t="석유화학">석유화학</button>
+    <button class="filter-chip" data-t="2차전지">2차전지</button>
+    <button class="filter-chip" data-t="태양광">태양광</button>
+    <button class="filter-chip" data-t="스마트폰·모바일">모바일</button>
+    <button class="filter-chip" data-t="노트북·PC">노트북</button>
+    <button class="filter-chip" data-t="가전">가전</button>
+    <div class="filter-sep"></div>
+    <span class="filter-label">기업</span>
+    <button class="filter-chip co-on" data-c="">전체</button>
+    <button class="filter-chip" data-c="삼성">삼성</button>
+    <button class="filter-chip" data-c="SK">SK</button>
+    <button class="filter-chip" data-c="LG">LG</button>
+    <button class="filter-chip" data-c="한화">한화</button>
+    <button class="filter-chip" data-c="엔비디아">NVIDIA</button>
+    <button class="filter-chip" data-c="애플">Apple</button>
+    <button class="filter-chip" data-c="AMD">AMD</button>
+    <button class="filter-chip" data-c="인텔">Intel</button>
+    <button class="filter-chip" data-c="퀄컴">Qualcomm</button>
+    <button class="filter-chip" data-c="키옥시아">Kioxia</button>
+    <button class="filter-chip" data-c="샌디스크">SanDisk</button>
+    <button class="filter-chip" data-c="TI">TI</button>
+  </div>
+</div>
+
+<main>
+  <div id="summary-bar">
+    <div class="stat"><span class="stat-l">기사</span><span class="stat-v" id="stat-total">—</span></div>
+    <div class="stat"><span class="stat-l">긍정</span><span class="stat-v pos" id="stat-pos">—</span></div>
+    <div class="stat"><span class="stat-l">부정</span><span class="stat-v neg" id="stat-neg">—</span></div>
+    <div class="stat"><span class="stat-l">중립</span><span class="stat-v" id="stat-neu">—</span></div>
+    <div class="overview-text" id="overview-text"></div>
+  </div>
+
+  <div id="content">
+    <div id="placeholder">
+      <div class="icon">🌐</div>
+      <p>API 키를 입력하고 새로고침을 눌러주세요</p>
+      <small>FT · Bloomberg · NYT · WSJ · WP · Reuters · Nikkei Asia<br>삼성·SK·LG·한화 · NVIDIA·Apple·AMD·Intel·Qualcomm · 반도체·2차전지·가전</small>
+    </div>
+  </div>
+</main>
+
+<footer>
+  글로벌 외신 모니터 · Powered by Claude · 24시간 이내 최신 외신 자동 수집
+</footer>
+
+<script>
+const SOURCE_MAP = {
+  'Financial Times':'ft','Bloomberg':'bbg','New York Times':'nyt',
+  'Wall Street Journal':'wsj','Washington Post':'wp','Reuters':'reu','Nikkei Asia':'nik'
+};
+const SOURCE_LABELS = {
+  ft:'Financial Times',bbg:'Bloomberg',nyt:'New York Times',
+  wsj:'Wall Street Journal',wp:'Washington Post',reu:'Reuters',nik:'Nikkei Asia'
+};
+
+let selSrc = 'all', selTopic = '', selCo = '';
+
+// ── Filter chips
+document.querySelectorAll('[data-s]').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('[data-s]').forEach(x => x.classList.remove('src-on'));
+  b.classList.add('src-on'); selSrc = b.dataset.s;
+}));
+document.querySelectorAll('[data-t]').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('[data-t]').forEach(x => x.classList.remove('ind-on'));
+  b.classList.add('ind-on'); selTopic = b.dataset.t;
+}));
+document.querySelectorAll('[data-c]').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('[data-c]').forEach(x => x.classList.remove('co-on'));
+  b.classList.add('co-on'); selCo = b.dataset.c;
+}));
+
+// ── API Key
+function saveApiKey() {
+  const raw = document.getElementById('api-key-input').value.trim();
+  // sk-ant- 중복 자동 수정
+  const key = raw.replace(/^(sk-ant-){2,}/, 'sk-ant-');
+  if (!key.startsWith('sk-ant-')) {
+    alert('API 키 형식이 올바르지 않습니다.\nsk-ant-... 형태로 시작해야 합니다.');
+    return;
+  }
+  localStorage.setItem('anthropic_api_key', key);
+  document.getElementById('api-banner').style.display = 'none';
+  setStatus('API 키 저장됨');
+  loadNews();
+}
+
+function getApiKey() {
+  return localStorage.getItem('anthropic_api_key') || '';
+}
+
+function resetApiKey() {
+  localStorage.removeItem('anthropic_api_key');
+  document.getElementById('api-key-input').value = '';
+  document.getElementById('api-banner').style.display = 'block';
+  document.getElementById('content').innerHTML = '<div id="placeholder"><div class="icon">🌐</div><p>API 키를 입력하고 새로고침을 눌러주세요</p></div>';
+  document.getElementById('summary-bar').style.display = 'none';
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = getApiKey();
+  if (saved) {
+    document.getElementById('api-banner').style.display = 'none';
+    setStatus('API 키 불러옴 · 로딩 중...');
+    loadNews();
+  }
+});
+
+// ── Status
+function setStatus(msg) {
+  document.getElementById('status-text').textContent = msg;
+}
+
+// ── Skeleton
+function showSkeleton() {
+  const rows = [85,60,90,45,70,80,55,75];
+  document.getElementById('content').innerHTML = `
+    <div class="skeleton-wrap">
+      ${rows.map(() => `
+        <div class="sk-item">
+          <div style="display:flex;gap:8px;margin-bottom:10px">
+            <div class="sk" style="width:60px;height:18px;border-radius:4px"></div>
+            <div class="sk" style="width:80px;height:18px;border-radius:4px"></div>
+          </div>
+          <div class="sk" style="width:${60+Math.random()*35|0}%;height:20px;margin-bottom:6px;border-radius:4px"></div>
+          <div class="sk" style="width:40%;height:14px;margin-bottom:10px;border-radius:4px"></div>
+          <div class="sk" style="width:95%;height:12px;margin-bottom:5px;border-radius:3px"></div>
+          <div class="sk" style="width:80%;height:12px;border-radius:3px"></div>
+        </div>`).join('')}
+    </div>`;
+}
+
+// ── Build prompt
+function buildPrompt() {
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('ko-KR', { year:'numeric', month:'long', day:'numeric', weekday:'long' });
+  const timeStr = now.toLocaleTimeString('ko-KR', { hour:'2-digit', minute:'2-digit' });
+
+  const srcInstr = selSrc !== 'all'
+    ? `모든 기사는 반드시 "${selSrc}" 출처로 표시하세요.`
+    : 'Financial Times, Bloomberg, New York Times, Wall Street Journal, Washington Post, Reuters, Nikkei Asia에서 골고루 출처를 배분하세요.';
+
+  const filters = [];
+  if (selTopic) filters.push(`산업 필터: ${selTopic}`);
+  if (selCo)    filters.push(`기업 필터: ${selCo}`);
+  const filterInstr = filters.length ? `\n추가 필터: ${filters.join(', ')}` : '';
+
+  return `당신은 글로벌 외신 모니터링 전문가입니다.
+현재 날짜·시간: ${dateStr} ${timeStr} (한국 시간)
+
+직전 24시간 이내 보도된 최신 외신 기사를 수집·분석해주세요.
+
+[매체] ${srcInstr}${filterInstr}
+[대상] 삼성·SK·LG·한화 계열 / 엔비디아·애플·AMD·인텔·샌디스크·TI·키옥시아·퀄컴 / 반도체·석유화학·2차전지·태양광·스마트폰·노트북·가전
+
+순수 JSON만 출력 (다른 텍스트 없이):
+{"generated_at":"${dateStr} ${timeStr}","overview":"종합 분석 2문장","articles":[{"title":"영어 제목","title_ko":"한국어 번역","source":"매체명","date":"날짜","summary":"한국어 요약 2문장","sentiment":"긍정적|부정적|중립적","tags":["태그1","태그2","태그3"],"detail":"상세분석 3문장","url":"기사URL"}]}
+
+기사 6개. 각 필드는 간결하게.`;
+}
+
+// ── Safe JSON parser (잘린 JSON 복구)
+function safeParseJson(str) {
+  // 1차: 그냥 파싱
+  try { return JSON.parse(str); } catch(e) {}
+
+  // 2차: articles 배열이 잘린 경우 — 마지막 불완전한 객체 제거 후 배열 닫기
+  try {
+    // 마지막으로 완전히 닫힌 } 위치 찾기
+    let depth = 0, lastComplete = -1, inStr = false, esc = false;
+    for (let i = 0; i < str.length; i++) {
+      const c = str[i];
+      if (esc) { esc = false; continue; }
+      if (c === '\\' && inStr) { esc = true; continue; }
+      if (c === '"') { inStr = !inStr; continue; }
+      if (inStr) continue;
+      if (c === '{') depth++;
+      if (c === '}') { depth--; if (depth === 1) lastComplete = i; }
+    }
+    if (lastComplete > 0) {
+      const fixed = str.slice(0, lastComplete + 1) + ']}';
+      return JSON.parse(fixed);
+    }
+  } catch(e) {}
+
+  return null;
+}
+
+// ── Fetch news
+async function loadNews() {
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    document.getElementById('api-banner').style.display = 'block';
+    return;
+  }
+
+  const btn = document.getElementById('refresh-btn');
+  btn.disabled = true;
+  btn.classList.add('spinning');
+  setStatus('검색 중...');
+  showSkeleton();
+  document.getElementById('summary-bar').style.display = 'none';
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-5',
+        max_tokens: 8000,
+        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+        messages: [{ role: 'user', content: buildPrompt() }]
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(`API 오류 ${res.status}: ${err?.error?.message || '알 수 없는 오류'}`);
+    }
+
+    const data = await res.json();
+    const text = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
+    const match = text.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error('응답에서 JSON을 찾을 수 없습니다');
+
+    const parsed = safeParseJson(match[0]);
+    if (!parsed) throw new Error('JSON 파싱 실패 — 다시 시도해주세요');
+    renderNews(parsed);
+    setStatus('업데이트: ' + new Date().toLocaleTimeString('ko-KR'));
+
+  } catch (e) {
+    document.getElementById('content').innerHTML = `
+      <div class="error-box">
+        ⚠️ ${e.message}<br>
+        <small style="opacity:0.7;margin-top:4px;display:block">API 키를 확인하거나 잠시 후 다시 시도해주세요.</small>
+      </div>`;
+    setStatus('오류 발생');
+    console.error(e);
+  }
+
+  btn.disabled = false;
+  btn.classList.remove('spinning');
+}
+
+// ── Render
+function srcClass(src) {
+  return SOURCE_MAP[src] || 'other';
+}
+function sentClass(s) {
+  return s === '긍정적' ? 'sent-pos' : s === '부정적' ? 'sent-neg' : 'sent-neu';
+}
+
+function renderNews(data) {
+  const arts = data.articles || [];
+  if (!arts.length) {
+    document.getElementById('content').innerHTML = '<p style="color:var(--text3);text-align:center;padding:3rem">검색 결과가 없습니다.</p>';
+    return;
+  }
+
+  const pos = arts.filter(a => a.sentiment === '긍정적').length;
+  const neg = arts.filter(a => a.sentiment === '부정적').length;
+  const neu = arts.length - pos - neg;
+
+  const sbar = document.getElementById('summary-bar');
+  sbar.style.display = 'flex';
+  document.getElementById('stat-total').textContent = arts.length + '건';
+  document.getElementById('stat-pos').textContent = pos;
+  document.getElementById('stat-neg').textContent = neg;
+  document.getElementById('stat-neu').textContent = neu;
+  document.getElementById('overview-text').textContent = data.overview || '';
+
+  document.getElementById('content').innerHTML = `<div id="news-list">${arts.map((a, i) => {
+    const sc = srcClass(a.source);
+    const sent = sentClass(a.sentiment);
+    const tags = (a.tags || []).map(t => `<span class="tag-pill">${t}</span>`).join('');
+    const url = a.url && a.url.startsWith('http') ? a.url : '#';
+    return `
+      <div class="news-card" style="animation-delay:${i * 0.04}s">
+        <div class="card-meta">
+          <span class="source-tag tag-${sc}">${a.source || ''}</span>
+          <span class="card-date">${a.date || ''}</span>
+          <span class="fresh-badge">
+            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            24h
+          </span>
+          <span class="sentiment ${sent}">${a.sentiment || ''}</span>
+        </div>
+        <div class="title-en">${a.title || ''}</div>
+        <div class="title-ko">${a.title_ko || ''}</div>
+        <div class="summary">${a.summary || ''}</div>
+        <div class="card-footer">
+          ${tags}
+          <button class="detail-toggle" onclick="toggleDetail(${i})">상세 분석 ▾</button>
+          ${url !== '#' ? `<a class="orig-link" href="${url}" target="_blank" rel="noopener">
+            원문 보기
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </a>` : ''}
+        </div>
+        <div class="detail-body" id="det-${i}">${a.detail || ''}</div>
+      </div>`;
+  }).join('')}</div>`;
+}
+
+function toggleDetail(i) {
+  const el = document.getElementById('det-' + i);
+  el.classList.toggle('open');
+  const btn = el.previousElementSibling.querySelector('.detail-toggle');
+  if (btn) btn.textContent = el.classList.contains('open') ? '상세 분석 ▴' : '상세 분석 ▾';
+}
+</script>
+</body>
+</html>
